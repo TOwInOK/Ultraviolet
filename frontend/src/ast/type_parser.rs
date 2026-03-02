@@ -5,35 +5,46 @@ use crate::{
 };
 
 /// Parse Ultraviolet type
-pub fn parse_type(node: UVParseNode) -> Result<ASTBlockType, SpannedError> {
-    Ok(ASTBlockType::Type(parse(node)?))
+pub fn parse_type(node: &UVParseNode) -> Result<ASTBlockType, SpannedError> {
+    Ok(ASTBlockType::Type(match node.name.as_str() {
+        "union" => {
+            if node.self_closing {
+                return Err(SpannedError::new(
+                    "Union cannot be used as individual type",
+                    node.span,
+                ));
+            }
+            parse_union(node)?
+        }
+        _ => {
+            if !node.self_closing {
+                return Err(SpannedError::new(
+                    "All type tags must be self-closing",
+                    node.span,
+                ));
+            }
+            parse(node)?
+        }
+    }))
 }
 
-fn parse(node: UVParseNode) -> Result<UVType, SpannedError> {
-    if !node.self_closing && node.name != "union" {
-        return Err(SpannedError::new(
-            "All type tags must be self-closing",
-            node.span,
-        ));
-    }
-
+fn parse(node: &UVParseNode) -> Result<UVType, SpannedError> {
     Ok(match node.name.as_str() {
         "int" => UVType::Int,
         "float" => UVType::Float,
         "str" => UVType::String,
         "bool" => UVType::Boolean,
         "null" => UVType::Null,
-        "union" => parse_union(node)?,
         _ => {
             return Err(SpannedError::new(
                 format!("Unknown type `{}`", node.name),
-                node.span.clone(),
+                node.span,
             ));
         }
     })
 }
 
-fn parse_union(node: UVParseNode) -> Result<UVType, SpannedError> {
+fn parse_union(node: &UVParseNode) -> Result<UVType, SpannedError> {
     if !node.all_tags() {
         return Err(SpannedError::new(
             "All children inside union tag must be known types",
@@ -46,13 +57,14 @@ fn parse_union(node: UVParseNode) -> Result<UVType, SpannedError> {
     }
 
     if node.children_len() == 1 {
-        return Ok(parse(node.get_child_node(0).unwrap().clone())?);
+        return Ok(parse(node.get_child_node(0).unwrap())?);
     }
 
-    let types: Result<Vec<UVType>, SpannedError> = node
+    let types = node
         .get_all_tags()
         .iter()
-        .map(|ch| parse(ch.clone()))
-        .collect();
+        .map(|ch| parse(ch))
+        .collect::<Result<Vec<UVType>, SpannedError>>();
+    
     Ok(UVType::Union(types?))
 }

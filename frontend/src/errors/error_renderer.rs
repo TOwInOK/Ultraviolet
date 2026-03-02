@@ -28,7 +28,7 @@ impl ErrorRenderer for SpannedError {
             return str;
         }
 
-        let (line, col) = source.get_line_col(self.get_span().clone());
+        let (line, col) = source.get_line_col(self.get_span());
         format!(
             "\n{}: {}",
             self.render_error_line(line, col, source).red(),
@@ -37,7 +37,7 @@ impl ErrorRenderer for SpannedError {
     }
 
     fn render_extended(&self, source: &SourceFile) -> Result<String> {
-        let (line, col) = source.get_line_col(self.get_span().clone());
+        let (line, col) = source.get_line_col(self.get_span());
         let mut line_content = source.get_line_content(line)?;
         let original_len = line_content.len();
 

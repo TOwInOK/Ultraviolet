@@ -69,11 +69,11 @@ impl UVParseNode {
     }
 
     /// Get all nested tags (nodes)
-    pub fn get_all_tags(&self) -> Vec<UVParseNode> {
+    pub fn get_all_tags(&self) -> Vec<&UVParseNode> {
         self.children
             .iter()
             .filter_map(|ch| match ch {
-                UVParseBody::Tag(node) => Some((**node).clone()),
+                UVParseBody::Tag(node) => Some(node.as_ref()),
                 UVParseBody::String(_) => None,
             })
             .collect()
@@ -91,8 +91,8 @@ pub enum UVParseBody {
 impl Positional for UVParseBody {
     fn get_span(&self) -> Span {
         match self {
-            UVParseBody::String(type_with_span) => type_with_span.span.clone(),
-            UVParseBody::Tag(uvparse_node) => uvparse_node.span.clone(),
+            UVParseBody::String(type_with_span) => type_with_span.span,
+            UVParseBody::Tag(uvparse_node) => uvparse_node.span,
         }
     }
 }

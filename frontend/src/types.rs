@@ -82,7 +82,7 @@ impl<'a> SourceFile<'a> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Copy)]
 
 /// Span displays the portion of the source code that a token or AST node occupies
 pub struct Span {

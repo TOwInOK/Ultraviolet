@@ -22,7 +22,7 @@ impl SpannedError {
 
 impl Positional for SpannedError {
     fn get_span(&self) -> Span {
-        self.span.clone()
+        self.span
     }
 }
 

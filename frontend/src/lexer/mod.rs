@@ -9,7 +9,6 @@ pub mod types;
 
 pub struct Lexer {
     iter: Iter<char>,
-    tokens: Vec<UVToken>,
 
     buffer: String,
     parse_state: LexerParseState,
@@ -21,7 +20,6 @@ impl Lexer {
     pub fn new(input_code: String) -> Lexer {
         Self {
             iter: Iter::from(input_code.chars()),
-            tokens: Vec::new(),
             buffer: String::new(),
             parse_state: LexerParseState::Default,
             token_start: 0,
@@ -29,13 +27,14 @@ impl Lexer {
     }
 
     pub fn parse(&mut self) -> Vec<UVToken> {
+        let mut tokens: Vec<UVToken> = Vec::new();
         while let Some(_) = self.iter.peek(None) {
             let iteration_buffer = match self.parse_state {
                 LexerParseState::Default => self.lex_normal_mode(),
                 LexerParseState::ParsingRawStringLiteral(_) => self.lex_raw_mode(),
             };
 
-            self.tokens.extend(iteration_buffer);
+            tokens.extend(iteration_buffer);
         }
 
         // If literal is a raw – disable trimming
@@ -50,12 +49,12 @@ impl Lexer {
                 LexerParseState::Default => UVLexerTokens::Literal(lit),
                 LexerParseState::ParsingRawStringLiteral(_) => UVLexerTokens::RawString(lit),
             };
-            self.tokens.push(UVToken {
+            tokens.push(UVToken {
                 token: token,
                 span: Span::new(self.token_start, self.iter.pos),
             });
         }
-        self.tokens.clone()
+        tokens
     }
 
     fn lex_normal_mode(&mut self) -> Vec<UVToken> {

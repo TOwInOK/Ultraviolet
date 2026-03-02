@@ -4,8 +4,9 @@
     <main>
         <union>
             <int />
-            <null />
         </union>
+
+        <null />
         <let>
             <name>aa</name>
             <value>

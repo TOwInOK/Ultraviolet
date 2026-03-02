@@ -22,7 +22,7 @@ pub fn process(file_path: &Path) -> Result<()> {
 
         let mut token_parser = TokenParser::new(tokens);
         let parse_tree = token_parser.parse()?;
-        gen_main_ast(parse_tree)
+        gen_main_ast(&parse_tree)
     };
 
     match parse() {

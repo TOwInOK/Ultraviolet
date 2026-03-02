@@ -6,7 +6,7 @@ use crate::{
 
 /// Parse UVValues.
 /// Caller must guarantee, that tag name is one of data types!
-pub fn parse_value(node: UVParseNode) -> Result<ASTBlockType, SpannedError> {
+pub fn parse_value(node: &UVParseNode) -> Result<ASTBlockType, SpannedError> {
     Ok(match node.name.as_str() {
         "int" => ASTBlockType::Value(UVValue::Int(parse_int(node)?)),
         "float" => ASTBlockType::Value(UVValue::Float(parse_float(node)?)),
@@ -19,7 +19,7 @@ pub fn parse_value(node: UVParseNode) -> Result<ASTBlockType, SpannedError> {
         _ => {
             return Err(SpannedError::new(
                 format!("Unknown value type `{}`", node.name),
-                node.span.clone(),
+                node.span,
             ));
         }
     })
@@ -30,37 +30,37 @@ fn validate_inner(node: &UVParseNode) -> Result<(), SpannedError> {
     if node.children_len() != 1 || !node.all_literals() {
         return Err(SpannedError::new(
             format!("Invalid value for `{}` type", node.name),
-            node.span.clone(),
+            node.span,
         ));
     }
     Ok(())
 }
 
-fn parse_int(node: UVParseNode) -> Result<i64, SpannedError> {
+fn parse_int(node: &UVParseNode) -> Result<i64, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
     inner_contents.value.parse::<i64>().map_err(|_| {
         SpannedError::new(
             format!("Cannot parse `{}` to an integer", inner_contents.value),
-            inner_contents.span.clone(),
+            inner_contents.span,
         )
     })
 }
 
-fn parse_float(node: UVParseNode) -> Result<f64, SpannedError> {
+fn parse_float(node: &UVParseNode) -> Result<f64, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
     inner_contents.value.parse::<f64>().map_err(|_| {
         SpannedError::new(
             format!("Cannot parse `{}` to a float", inner_contents.value),
-            inner_contents.span.clone(),
+            inner_contents.span,
         )
     })
 }
 
-fn parse_str(node: UVParseNode) -> String {
+fn parse_str(node: &UVParseNode) -> String {
     let inner_contents = if let Some(lit) = node.get_inner_literal() {
         lit.value.clone()
     } else {
@@ -70,7 +70,7 @@ fn parse_str(node: UVParseNode) -> String {
     inner_contents
 }
 
-fn parse_boolean(node: UVParseNode) -> Result<bool, SpannedError> {
+fn parse_boolean(node: &UVParseNode) -> Result<bool, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
@@ -79,7 +79,7 @@ fn parse_boolean(node: UVParseNode) -> Result<bool, SpannedError> {
         "0" | "false" => Ok(false),
         _ => Err(SpannedError::new(
             format!("Cannot parse `{}` to a boolean", inner_contents.value),
-            inner_contents.span.clone(),
+            inner_contents.span,
         )),
     }
 }
@@ -88,7 +88,7 @@ fn validate_null(node: &UVParseNode) -> Result<(), SpannedError> {
     if !node.self_closing {
         return Err(SpannedError::new(
             "`null` tag must be self-closing",
-            node.span.clone(),
+            node.span,
         ));
     }
 

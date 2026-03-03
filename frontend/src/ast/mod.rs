@@ -97,7 +97,7 @@ fn parse_program_block(node: &UVParseNode) -> GeneratorOutputType {
 /// Parse children in head and main tags
 fn parse_root_children(children: &Vec<UVParseBody>) -> Result<Vec<ASTBlockType>, SpannedError> {
     children
-        .into_iter()
+        .iter()
         .map(|ch| match ch {
             UVParseBody::String(uvparse_literal) => {
                 return Err(SpannedError::new(
@@ -105,7 +105,7 @@ fn parse_root_children(children: &Vec<UVParseBody>) -> Result<Vec<ASTBlockType>,
                     uvparse_literal.span,
                 ));
             }
-            UVParseBody::Tag(uvparse_node) => Ok(generate_ast(&uvparse_node)?),
+            UVParseBody::Tag(uvparse_node) => Ok(generate_ast(uvparse_node)?),
         })
         .collect::<Result<Vec<ASTBlockType>, SpannedError>>()
 }

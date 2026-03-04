@@ -26,7 +26,7 @@ impl GetType for UVValue {
 }
 
 /// Ultraviolet primitive types
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub enum UVType {
     Int,
     Float,
@@ -35,6 +35,16 @@ pub enum UVType {
     Null,
 
     Union(Vec<UVType>),
+}
+
+impl UVType {
+    /// Fold Union type to vector
+    pub fn fold(&self) -> Vec<UVType> {
+        match self {
+            UVType::Union(ch) => ch.clone(),
+            t => vec![t.clone()],
+        }
+    }
 }
 
 impl IsAssignable for UVType {
@@ -108,6 +118,7 @@ pub enum ASTBlockType {
 
     MathOp(MathOp),
     LogicalOp(),
+    CompareOp(),
 
     ForLoop(),
     WhileLoop(),
@@ -176,7 +187,7 @@ impl StringToUVMathOp for str {
 
 impl MathOpType {
     /// If math operation can handle more than two arguments
-    pub fn can_handle_numerous_op(&self) -> bool {
+    pub fn is_variadic(&self) -> bool {
         match self {
             MathOpType::Sum | MathOpType::Mul => true,
             MathOpType::Div | MathOpType::Mod | MathOpType::Sub => false,

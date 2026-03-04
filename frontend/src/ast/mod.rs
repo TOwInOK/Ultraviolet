@@ -1,5 +1,4 @@
 use anyhow::Result;
-use colored::Colorize;
 use regex::Regex;
 
 use crate::{
@@ -7,12 +6,12 @@ use crate::{
         math_op::parse_math_op,
         traits::{StringToUVMathOp, StringToUVType},
         type_parser::parse_type,
-        types::{ASTBlockType, ProgramBlock, VariableDefinition},
+        types::{ASTBlockType, ProgramBlock},
         values::parse_value,
+        variables::parse_var_definition,
     },
     errors::SpannedError,
-    tokens_parser::types::{UVParseBody, UVParseNode},
-    types::{Positional, Spanned},
+    tokens_parser::types::UVParseNode,
 };
 use once_cell::sync::Lazy;
 
@@ -21,8 +20,9 @@ mod traits;
 mod type_parser;
 mod types;
 mod values;
+mod variables;
 
-type GeneratorOutputType = Result<ASTBlockType, SpannedError>;
+pub type GeneratorOutputType = Result<ASTBlockType, SpannedError>;
 
 static IDENT_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").unwrap());
 
@@ -31,15 +31,31 @@ fn is_valid_identifier(s: &str) -> bool {
     IDENT_REGEX.is_match(s)
 }
 
-pub fn gen_main_ast(parse_tree: &UVParseNode) -> GeneratorOutputType {
-    if parse_tree.name.ne("program") {
+/// Parse <program> content
+pub fn gen_main_ast(node: &UVParseNode) -> GeneratorOutputType {
+    if node.name.ne("program") {
         return Err(SpannedError::new(
             "The program must begin with the <program> tag",
-            parse_tree.span,
+            node.span,
         ));
     }
 
-    Ok(parse_program_block(parse_tree)?)
+    let head_parsed = if let Some(h) = node.get_child_by_name("head") {
+        Some(ASTBlockType::HeadBlock(parse_root_children(&h)?))
+    } else {
+        None
+    };
+
+    let main =
+        ASTBlockType::MainBlock(parse_root_children(node.get_child_by_name("main").ok_or(
+            SpannedError::new("Main block in <program> is required", node.span),
+        )?)?);
+
+    Ok(ASTBlockType::Program(Box::new(ProgramBlock {
+        head: head_parsed,
+        main: main,
+        span: node.span,
+    })))
 }
 
 pub fn generate_ast(node: &UVParseNode) -> GeneratorOutputType {
@@ -67,104 +83,18 @@ pub fn generate_ast(node: &UVParseNode) -> GeneratorOutputType {
     })
 }
 
-/// Parse <program> content
-fn parse_program_block(node: &UVParseNode) -> GeneratorOutputType {
-    let head = node.get_child_by_name("head");
-
-    let head_parsed = if let Some(h) = head {
-        Some(ASTBlockType::HeadBlock(parse_root_children(&h.children)?))
-    } else {
-        None
-    };
-
-    let main = ASTBlockType::MainBlock(parse_root_children(
-        &node
-            .get_child_by_name("main")
-            .ok_or(SpannedError::new(
-                "Main block in <program> is required",
-                node.span,
-            ))?
-            .children,
-    )?);
-
-    Ok(ASTBlockType::Program(Box::new(ProgramBlock {
-        head: head_parsed,
-        main: main,
-        span: node.span,
-    })))
-}
-
 /// Parse children in head and main tags
-fn parse_root_children(children: &Vec<UVParseBody>) -> Result<Vec<ASTBlockType>, SpannedError> {
-    children
+fn parse_root_children(node: &UVParseNode) -> Result<Vec<ASTBlockType>, SpannedError> {
+    if !node.all_tags() {
+        let first_literal = node.get_inner_literal().unwrap();
+        return Err(SpannedError::new(
+            "Unexpected unwrapped literal in root tag",
+            first_literal.span,
+        ));
+    }
+
+    node.get_all_tags()
         .iter()
-        .map(|ch| match ch {
-            UVParseBody::String(uvparse_literal) => {
-                return Err(SpannedError::new(
-                    "Unexpected unwrapped literal in root tag",
-                    uvparse_literal.span,
-                ));
-            }
-            UVParseBody::Tag(uvparse_node) => Ok(generate_ast(uvparse_node)?),
-        })
+        .map(|ch| Ok(generate_ast(ch)?))
         .collect::<Result<Vec<ASTBlockType>, SpannedError>>()
-}
-
-/// Parse definition of variables <let>
-fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
-    let extra = node.search_extra_children(vec!["name", "value", "const"]);
-    if !extra.is_empty() {
-        let first = extra.first().unwrap();
-        return Err(SpannedError::new(
-            "Found extra children for variable definition",
-            first.get_span(),
-        ));
-    }
-
-    let name_block = node.get_child_by_name("name").ok_or(SpannedError::new(
-        "Variable definition should have an inner <name> tag",
-        node.span,
-    ))?;
-
-    if name_block.children_len() != 1 || !name_block.all_literals() {
-        return Err(SpannedError::new("Invalid variable name", name_block.span));
-    }
-
-    let name = name_block.get_inner_literal().unwrap(); // This unwrap is unreachable due checks above
-
-    if !is_valid_identifier(&name.value) {
-        return Err(SpannedError::new(
-            format!("`{}` is not a valid name for variable", name.value),
-            name.span,
-        ));
-    }
-
-    let value_block = node
-        .get_child_by_name("value")
-        .ok_or(SpannedError::new("Variable must be initialized", node.span))?;
-
-    if value_block.children_len() != 1 || !value_block.all_tags() {
-        return Err(SpannedError::new(
-            format!(
-                "Variable value must have only one inner tag.\n{}{}",
-                "tip".green(),
-                ": If you want to place multiple tags, wrap them in a <b> tag.",
-            ),
-            value_block.span,
-        ));
-    }
-
-    let value = value_block.get_child_node(0).unwrap(); // This unwrap is unreachable due checks above
-    let is_const = if let Some(c) = node.get_child_by_name("const") {
-        c.self_closing
-    } else {
-        false
-    };
-
-    Ok(ASTBlockType::VariableDefinition(VariableDefinition {
-        name: Spanned::new(name.value.clone(), name_block.span),
-        value: Spanned::new(Box::new(generate_ast(value)?), value_block.span),
-        is_const: is_const,
-        span: node.span,
-    }))
 }

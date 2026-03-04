@@ -1,34 +1,35 @@
 use crate::{
-    ast::types::{ASTBlockType, UVType},
+    ast::{
+        GeneratorOutputType,
+        types::{ASTBlockType, UVType},
+    },
     errors::SpannedError,
     tokens_parser::types::UVParseNode,
 };
 
 /// Parse Ultraviolet type
-pub fn parse_type(node: &UVParseNode) -> Result<ASTBlockType, SpannedError> {
-    Ok(ASTBlockType::Type(match node.name.as_str() {
-        "union" => {
-            if node.self_closing {
-                return Err(SpannedError::new(
-                    "Union cannot be used as individual type",
-                    node.span,
-                ));
-            }
-            parse_union(node)?
-        }
-        _ => {
-            if !node.self_closing {
-                return Err(SpannedError::new(
-                    "All type tags must be self-closing",
-                    node.span,
-                ));
-            }
-            parse(node)?
-        }
-    }))
+pub fn parse_type(node: &UVParseNode) -> GeneratorOutputType {
+    Ok(ASTBlockType::Type(parse(node)?))
 }
 
 fn parse(node: &UVParseNode) -> Result<UVType, SpannedError> {
+    if node.name.eq("union") {
+        if node.self_closing {
+            return Err(SpannedError::new(
+                "Union cannot be used as individual type",
+                node.span,
+            ));
+        }
+        return parse_union(node);
+    }
+
+    if !node.self_closing {
+        return Err(SpannedError::new(
+            "All type tags must be self-closing",
+            node.span,
+        ));
+    }
+
     Ok(match node.name.as_str() {
         "int" => UVType::Int,
         "float" => UVType::Float,
@@ -62,9 +63,12 @@ fn parse_union(node: &UVParseNode) -> Result<UVType, SpannedError> {
 
     let types = node
         .get_all_tags()
-        .iter()
-        .map(|ch| parse(ch))
-        .collect::<Result<Vec<UVType>, SpannedError>>();
-    
-    Ok(UVType::Union(types?))
+        .into_iter()
+        .map(parse)
+        .collect::<Result<Vec<UVType>, SpannedError>>()?
+        .into_iter()
+        .flat_map(|t| t.fold())
+        .collect::<Vec<_>>();
+
+    Ok(UVType::Union(types))
 }

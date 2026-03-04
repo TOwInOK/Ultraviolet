@@ -1,12 +1,15 @@
 use crate::{
-    ast::types::{ASTBlockType, UVValue},
+    ast::{
+        GeneratorOutputType,
+        types::{ASTBlockType, UVValue},
+    },
     errors::SpannedError,
     tokens_parser::types::UVParseNode,
 };
 
 /// Parse UVValues.
 /// Caller must guarantee, that tag name is one of data types!
-pub fn parse_value(node: &UVParseNode) -> Result<ASTBlockType, SpannedError> {
+pub fn parse_value(node: &UVParseNode) -> GeneratorOutputType {
     Ok(match node.name.as_str() {
         "int" => ASTBlockType::Value(UVValue::Int(parse_int(node)?)),
         "float" => ASTBlockType::Value(UVValue::Float(parse_float(node)?)),

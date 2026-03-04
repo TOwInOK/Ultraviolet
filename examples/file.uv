@@ -2,11 +2,22 @@
 
     <head></head>
     <main>
-        <sum>
-            <int>123</int>
-            <int>123</int>
-            <int>123</int>
-        </sum>
+        <union>
+            <str />
+            <union>
+                <int />
+                <null />
+            </union>
+        </union>
+
+        <let>
+            <!-- Variable name automatically casts to string -->
+            <name>variable_name</name>
+            <value>
+                <int>69</int>
+            </value>
+            <const />
+        </let>
     </main>
 
 </program>

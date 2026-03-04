@@ -1,6 +1,6 @@
 use crate::{
     ast::{
-        generate_ast,
+        GeneratorOutputType, generate_ast,
         traits::StringToUVMathOp,
         types::{ASTBlockType, MathOp},
     },
@@ -8,13 +8,13 @@ use crate::{
     tokens_parser::types::UVParseNode,
 };
 
-pub fn parse_math_op(node: &UVParseNode) -> Result<ASTBlockType, SpannedError> {
+pub fn parse_math_op(node: &UVParseNode) -> GeneratorOutputType {
     let op_type = node
         .name
         .to_uvmath()
         .ok_or(SpannedError::new("Unknown math operation", node.span))?;
 
-    let children = parse_arguments(node, !op_type.can_handle_numerous_op())?;
+    let children = parse_arguments(node, !op_type.is_variadic())?;
 
     Ok(ASTBlockType::MathOp(MathOp {
         op_type,

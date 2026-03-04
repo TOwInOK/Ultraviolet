@@ -26,7 +26,7 @@ impl GetType for UVValue {
 }
 
 /// Ultraviolet primitive types
-#[derive(PartialEq, Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum UVType {
     Int,
     Float,
@@ -38,11 +38,31 @@ pub enum UVType {
 }
 
 impl UVType {
-    /// Fold Union type to vector
-    pub fn fold(&self) -> Vec<UVType> {
+    /// Create new union type
+    pub fn new_union(types: Vec<UVType>) -> UVType {
+        let mut flat = Vec::new();
+
+        for t in types {
+            t.flatten_into(&mut flat);
+        }
+
+        flat.sort();
+        flat.dedup();
+
+        if flat.len() == 1 {
+            flat.into_iter().next().unwrap()
+        } else {
+            UVType::Union(flat)
+        }
+    }
+
+    /// Flat Union type to provided output vector
+    pub fn flatten_into(&self, out: &mut Vec<Self>) {
         match self {
-            UVType::Union(ch) => ch.clone(),
-            t => vec![t.clone()],
+            Self::Union(types) => {
+                types.iter().for_each(|t| t.flatten_into(out));
+            }
+            t => out.push(t.clone()),
         }
     }
 }

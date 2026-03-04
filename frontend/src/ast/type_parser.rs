@@ -65,10 +65,7 @@ fn parse_union(node: &UVParseNode) -> Result<UVType, SpannedError> {
         .get_all_tags()
         .into_iter()
         .map(parse)
-        .collect::<Result<Vec<UVType>, SpannedError>>()?
-        .into_iter()
-        .flat_map(|t| t.fold())
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<UVType>, SpannedError>>()?;
 
-    Ok(UVType::Union(types))
+    Ok(UVType::new_union(types))
 }

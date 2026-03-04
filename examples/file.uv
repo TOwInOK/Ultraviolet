@@ -4,9 +4,9 @@
     <main>
         <union>
             <str />
+            <null />
             <union>
                 <int />
-                <null />
             </union>
         </union>
 

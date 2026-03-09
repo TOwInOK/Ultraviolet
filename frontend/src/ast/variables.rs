@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use colored::Colorize;
 
 use crate::{
@@ -39,9 +41,9 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         node.span,
     ))?;
 
-    if !is_valid_identifier(&name.value) {
+    if !is_valid_identifier(&name) {
         return Err(SpannedError::new(
-            format!("`{}` is not a valid name for variable", name.value),
+            format!("`{}` is not a valid name for variable", name.deref()),
             name.span,
         ));
     }
@@ -78,7 +80,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
     };
 
     Ok(ASTBlockType::VariableDefinition(VariableDefinition {
-        name: Spanned::new(name.value.clone(), name_block.span),
+        name: Spanned::new(name.deref().clone(), name_block.span),
         value: Spanned::new(Box::new(generate_ast(value)?), value_block.span),
         is_const: is_const,
         span: node.span,

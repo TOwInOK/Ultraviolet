@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use std::{fs, path::Path};
+use std::{fs, ops::Deref, path::Path};
 
 /// Representation of input file
 pub struct SourceFile<'a> {
@@ -109,6 +109,7 @@ pub trait Positional {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+/// Type `T` with span
 pub struct Spanned<T> {
     pub value: T,
     pub span: Span,
@@ -117,5 +118,13 @@ pub struct Spanned<T> {
 impl<T> Spanned<T> {
     pub fn new(value: T, span: Span) -> Self {
         Self { value, span }
+    }
+}
+
+impl<T> Deref for Spanned<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.value
     }
 }

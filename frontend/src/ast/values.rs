@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::types::Spanned;
 use crate::{
     ast::{
@@ -47,9 +49,9 @@ fn parse_int(node: &UVParseNode) -> Result<i64, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
-    inner_contents.value.parse::<i64>().map_err(|_| {
+    inner_contents.parse::<i64>().map_err(|_| {
         SpannedError::new(
-            format!("Cannot parse `{}` to an integer", inner_contents.value),
+            format!("Cannot parse `{}` to an integer", inner_contents.deref()),
             inner_contents.span,
         )
     })
@@ -59,9 +61,9 @@ fn parse_float(node: &UVParseNode) -> Result<f64, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
-    inner_contents.value.parse::<f64>().map_err(|_| {
+    inner_contents.parse::<f64>().map_err(|_| {
         SpannedError::new(
-            format!("Cannot parse `{}` to a float", inner_contents.value),
+            format!("Cannot parse `{}` to a float", inner_contents.deref()),
             inner_contents.span,
         )
     })
@@ -69,7 +71,7 @@ fn parse_float(node: &UVParseNode) -> Result<f64, SpannedError> {
 
 fn parse_str(node: &UVParseNode) -> String {
     let inner_contents = if let Some(lit) = node.get_inner_literal() {
-        lit.value.clone()
+        lit.deref().clone()
     } else {
         String::new()
     };
@@ -81,11 +83,11 @@ fn parse_boolean(node: &UVParseNode) -> Result<bool, SpannedError> {
     validate_inner(&node)?;
     let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
 
-    match inner_contents.value.as_str() {
+    match inner_contents.as_str() {
         "1" | "true" => Ok(true),
         "0" | "false" => Ok(false),
         _ => Err(SpannedError::new(
-            format!("Cannot parse `{}` to a boolean", inner_contents.value),
+            format!("Cannot parse `{}` to a boolean", inner_contents.deref()),
             inner_contents.span,
         )),
     }

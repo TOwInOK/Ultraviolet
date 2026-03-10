@@ -64,7 +64,7 @@ impl ErrorRenderer for SpannedError {
             " {} | {}{}",
             " ".repeat(line_no_len),
             " ".repeat(col_offsetted),
-            "^".repeat(min(self.span.end - self.span.start, line_content.len() - 1))
+            "^".repeat(min(self.span.end - self.span.start, line_content.len()))
                 .red()
         )?;
 

@@ -28,6 +28,17 @@ impl UVParseNode {
         })
     }
 
+    /// Get inner TAG children by name
+    pub fn get_children_by_name(&self, name: &str) -> Vec<&UVParseNode> {
+        self.children
+            .iter()
+            .filter_map(|ch| match ch {
+                UVParseBody::Tag(node) if node.name == name => Some(node.as_ref()),
+                _ => None,
+            })
+            .collect()
+    }
+
     /// Get first inner literal
     pub fn get_inner_literal(&self) -> Option<&Spanned<String>> {
         self.children.iter().find_map(|ch| match ch {

@@ -7,7 +7,12 @@
             <value>
                 <int>12</int>
             </value>
-            <type><int /></type>
+            <type>
+                <union>
+                    <int />
+                    <null />
+                </union>
+            </type>
         </let>
     </main>
 

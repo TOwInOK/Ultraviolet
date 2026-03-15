@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::{
     ast::{
         GeneratorOutputType, generate_ast, is_valid_identifier,
-        type_parser::parse_type,
+        type_parser::parse_type_raw,
         types::{ASTBlockType, VariableAccess, VariableAssign, VariableDefinition},
     },
     errors::SpannedError,
@@ -91,7 +91,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
             ));
         }
         Some(ch) => Some(Spanned::new(
-            parse_type(ch.get_tag_at(0).ok_or(SpannedError::new(
+            parse_type_raw(ch.get_tag_at(0).ok_or(SpannedError::new(
                 "[INTERNAL ERROR] Cannot get inner child",
                 ch.span,
             ))?)?,

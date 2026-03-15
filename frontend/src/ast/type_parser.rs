@@ -9,10 +9,11 @@ use crate::{
 
 /// Parse Ultraviolet type
 pub fn parse_type(node: &UVParseNode) -> GeneratorOutputType {
-    Ok(ASTBlockType::Type(parse(node)?))
+    Ok(ASTBlockType::Type(parse_type_raw(node)?))
 }
 
-fn parse(node: &UVParseNode) -> Result<UVType, SpannedError> {
+/// Parse Ultraviolet type into UVType
+pub fn parse_type_raw(node: &UVParseNode) -> Result<UVType, SpannedError> {
     if node.name.eq("union") {
         if node.self_closing {
             return Err(SpannedError::new(
@@ -63,13 +64,13 @@ fn parse_union(node: &UVParseNode) -> Result<UVType, SpannedError> {
             node.span,
         ))?;
 
-        return Ok(parse(t)?);
+        return Ok(parse_type_raw(t)?);
     }
 
     let types = node
         .get_all_tags()
         .into_iter()
-        .map(parse)
+        .map(parse_type_raw)
         .collect::<Result<Vec<UVType>, SpannedError>>()?;
 
     Ok(UVType::new_union(types))

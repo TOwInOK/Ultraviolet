@@ -168,7 +168,7 @@ pub struct ProgramBlock {
 pub struct VariableDefinition {
     pub name: Spanned<String>,
     pub value: Spanned<ASTBlockType>,
-    pub expected_type: Option<Spanned<ASTBlockType>>,
+    pub expected_type: Option<Spanned<UVType>>,
     pub is_const: bool,
 
     pub span: Span,

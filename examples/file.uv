@@ -2,27 +2,13 @@
 
     <head></head>
     <main>
-        <while>
-            <!-- While condition -->
-            <test>
-                <g>
-                    <let>
-                        <name>some_var</name>
-                        <value>
-                            <int>0</int>
-                            <int>0</int>
-                        </value>
-                    </let>
-                    <lt>
-                        <some_var />
-                        <int>10</int>
-                    </lt>
-                </g>
-            </test>
-
-            <body>
-            </body>
-        </while>
+        <let>
+            <name>v</name>
+            <value>
+                <int>12</int>
+            </value>
+            <type><int /></type>
+        </let>
     </main>
 
 </program>

@@ -130,7 +130,7 @@ pub enum ASTBlockType {
     HeadBlock(Vec<ASTBlockType>),
     MainBlock(Vec<ASTBlockType>),
 
-    VariableDefinition(VariableDefinition),
+    VariableDefinition(Box<VariableDefinition>),
     FunctionDefinition(),
 
     FunctionCall(),
@@ -167,7 +167,8 @@ pub struct ProgramBlock {
 #[derive(Debug)]
 pub struct VariableDefinition {
     pub name: Spanned<String>,
-    pub value: Spanned<Box<ASTBlockType>>,
+    pub value: Spanned<ASTBlockType>,
+    pub expected_type: Option<Spanned<ASTBlockType>>,
     pub is_const: bool,
 
     pub span: Span,

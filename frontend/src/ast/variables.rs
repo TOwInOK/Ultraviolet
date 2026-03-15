@@ -3,6 +3,7 @@ use std::ops::Deref;
 use crate::{
     ast::{
         GeneratorOutputType, generate_ast, is_valid_identifier,
+        type_parser::parse_type,
         types::{ASTBlockType, VariableAccess, VariableAssign, VariableDefinition},
     },
     errors::SpannedError,
@@ -12,7 +13,7 @@ use crate::{
 
 /// Parse definition of variables <let>
 pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
-    let extra = node.search_extra_children(vec!["name", "value", "const"]);
+    let extra = node.search_extra_children(vec!["name", "value", "const", "type"]);
     if !extra.is_empty() {
         let first = extra.first().ok_or(SpannedError::new(
             "[INTERNAL ERROR] Cannot get first extra child",
@@ -63,6 +64,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         node.span,
     ))?;
 
+    // <const /> tag
     let is_const = match node.get_child_by_name("const") {
         Some(c) if !c.self_closing => {
             return Err(SpannedError::new(
@@ -74,12 +76,39 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         None => false,
     };
 
-    Ok(ASTBlockType::VariableDefinition(VariableDefinition {
-        name: Spanned::new(name.deref().clone(), name_block.span),
-        value: Spanned::new(Box::new(generate_ast(value)?), value_block.span),
-        is_const: is_const,
-        span: node.span,
-    }))
+    // Expected type <type>
+    let exp_type = match node.get_child_by_name("type") {
+        Some(c) if c.self_closing => {
+            return Err(SpannedError::new(
+                "`type` tag cannot be self-closing",
+                c.span,
+            ));
+        }
+        Some(ch) if ch.children_len() != 1 || !ch.all_tags() => {
+            return Err(SpannedError::new(
+                "`type` tag must contain only one child, representing variable type",
+                ch.span,
+            ));
+        }
+        Some(ch) => Some(Spanned::new(
+            parse_type(ch.get_tag_at(0).ok_or(SpannedError::new(
+                "[INTERNAL ERROR] Cannot get inner child",
+                ch.span,
+            ))?)?,
+            ch.span,
+        )),
+        None => None,
+    };
+
+    Ok(ASTBlockType::VariableDefinition(Box::new(
+        VariableDefinition {
+            name: Spanned::new(name.deref().clone(), name_block.span),
+            value: Spanned::new(generate_ast(value)?, value_block.span),
+            expected_type: exp_type,
+            is_const: is_const,
+            span: node.span,
+        },
+    )))
 }
 
 /// Parse variable assignment

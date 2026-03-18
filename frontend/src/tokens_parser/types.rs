@@ -21,7 +21,7 @@ impl UVParseNode {
     }
 
     /// Get inner TAG child by name
-    pub fn get_child_by_name(&self, name: &str) -> Option<&UVParseNode> {
+    pub fn get_one_tag_by_name(&self, name: &str) -> Option<&UVParseNode> {
         self.children.iter().find_map(|ch| match ch {
             UVParseBody::Tag(node) if node.name == name => Some(node.as_ref()),
             _ => None,
@@ -29,7 +29,7 @@ impl UVParseNode {
     }
 
     /// Get inner TAG children by name
-    pub fn get_children_by_name(&self, name: &str) -> Vec<&UVParseNode> {
+    pub fn get_many_tags_by_name(&self, name: &str) -> Vec<&UVParseNode> {
         self.children
             .iter()
             .filter_map(|ch| match ch {

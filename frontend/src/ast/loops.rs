@@ -1,6 +1,7 @@
 use crate::{
     ast::{
-        GeneratorOutputType, generate_ast, parse_children_vec, types::{ASTBlockType, ForLoop, WhileLoop}
+        GeneratorOutputType, generate_ast, parse_children_vec,
+        types::{ASTBlockType, ForLoop, WhileLoop},
     },
     errors::SpannedError,
     tokens_parser::types::UVParseNode,
@@ -24,7 +25,7 @@ pub fn parse_for_loop(node: &UVParseNode) -> GeneratorOutputType {
     }
 
     // Iterator
-    let iterator_node = match node.get_child_by_name("iterator") {
+    let iterator_node = match node.get_one_tag_by_name("iterator") {
         Some(x) if x.children_len() != 1 || !x.all_literals() => {
             return Err(SpannedError::new(
                 "`iterator` child must have only one inner literal",
@@ -46,13 +47,13 @@ pub fn parse_for_loop(node: &UVParseNode) -> GeneratorOutputType {
     ))?;
 
     // Step
-    let step = match node.get_child_by_name("step") {
+    let step = match node.get_one_tag_by_name("step") {
         Some(_) => Some(generate_ast(get_and_validate_inner_tag(node, "step")?)?),
         None => None,
     };
 
     // Body
-    let body = match node.get_child_by_name("body") {
+    let body = match node.get_one_tag_by_name("body") {
         Some(x) => x,
         None => return Err(SpannedError::new("`for` loop must have a body", node.span)),
     };
@@ -84,7 +85,7 @@ pub fn parse_while_loop(node: &UVParseNode) -> GeneratorOutputType {
     }
 
     // Body
-    let body = match node.get_child_by_name("body") {
+    let body = match node.get_one_tag_by_name("body") {
         Some(x) => x,
         None => {
             return Err(SpannedError::new(
@@ -107,7 +108,7 @@ fn get_and_validate_inner_tag<'a>(
     node: &'a UVParseNode,
     name: &'a str,
 ) -> Result<&'a UVParseNode, SpannedError> {
-    let x_node = match node.get_child_by_name(&name) {
+    let x_node = match node.get_one_tag_by_name(&name) {
         Some(x) if x.children_len() != 1 || !x.all_tags() => {
             return Err(SpannedError::new(
                 format!("`{name}` child must have only one inner tag"),

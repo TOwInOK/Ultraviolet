@@ -26,7 +26,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         ));
     }
 
-    let name_block = node.get_child_by_name("name").ok_or(SpannedError::new(
+    let name_block = node.get_one_tag_by_name("name").ok_or(SpannedError::new(
         "Variable definition should have an inner <name> tag",
         node.span,
     ))?;
@@ -48,7 +48,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
     }
 
     let value_block = node
-        .get_child_by_name("value")
+        .get_one_tag_by_name("value")
         .ok_or(SpannedError::new("Variable must be initialized", node.span))?;
 
     if value_block.children_len() != 1 || !value_block.all_tags() {
@@ -65,7 +65,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
     ))?;
 
     // <const /> tag
-    let is_const = match node.get_child_by_name("const") {
+    let is_const = match node.get_one_tag_by_name("const") {
         Some(c) if !c.self_closing => {
             return Err(SpannedError::new(
                 "`const` tag must be self-closing",
@@ -77,7 +77,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
     };
 
     // Expected type <type>
-    let exp_type = match node.get_child_by_name("type") {
+    let exp_type = match node.get_one_tag_by_name("type") {
         Some(c) if c.self_closing => {
             return Err(SpannedError::new(
                 "`type` tag cannot be self-closing",

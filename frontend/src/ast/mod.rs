@@ -46,16 +46,18 @@ pub fn gen_main_ast(node: &UVParseNode) -> GeneratorOutputType {
         ));
     }
 
-    let head_parsed = if let Some(h) = node.get_child_by_name("head") {
+    let head_parsed = if let Some(h) = node.get_one_tag_by_name("head") {
         Some(ASTBlockType::HeadBlock(parse_children_vec(&h)?))
     } else {
         None
     };
 
-    let main =
-        ASTBlockType::MainBlock(parse_children_vec(node.get_child_by_name("main").ok_or(
-            SpannedError::new("Main block in <program> is required", node.span),
-        )?)?);
+    let main = ASTBlockType::MainBlock(parse_children_vec(
+        node.get_one_tag_by_name("main").ok_or(SpannedError::new(
+            "Main block in <program> is required",
+            node.span,
+        ))?,
+    )?);
 
     Ok(ASTBlockType::Program(Box::new(ProgramBlock {
         head: head_parsed,

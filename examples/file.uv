@@ -2,18 +2,21 @@
 
     <head></head>
     <main>
-        <let>
-            <name>v</name>
-            <value>
+        <if>
+            <test>
+                <gte>
+                    <variable_name />
+                    <int>8</int>
+                </gte>
+            </test>
+
+            <then>
                 <int>12</int>
-            </value>
-            <type>
-                <union>
-                    <int />
-                    <null />
-                </union>
-            </type>
-        </let>
+            </then>
+            <else>
+                <!-- Else body -->
+            </else>
+        </if>
     </main>
 
 </program>

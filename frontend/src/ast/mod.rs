@@ -4,6 +4,7 @@ use regex::Regex;
 use crate::{
     ast::{
         compare_op::parse_compare_op,
+        conditional_op::parse_conditional_op,
         logical_op::parse_logical_op,
         loops::{parse_for_loop, parse_while_loop},
         math_op::parse_math_op,
@@ -19,6 +20,7 @@ use crate::{
 use once_cell::sync::Lazy;
 
 mod compare_op;
+mod conditional_op;
 mod logical_op;
 mod loops;
 mod math_op;
@@ -78,15 +80,19 @@ pub fn generate_ast(node: &UVParseNode) -> GeneratorOutputType {
         // Parse while loop declaration
         "while" if !node.self_closing => parse_while_loop(node)?,
 
+        // Parse conditional operator
+        "if" if !node.self_closing => parse_conditional_op(node)?,
+
         // Parse group block
         "g" if !node.self_closing => ASTBlockType::GroupBlock(Box::new(parse_children_vec(node)?)),
 
+        /*
         // Type parsing
         // FIXME: Parsing of types should only occur in special places
         // TODO: Move this parsing to a separate function
         name if name.to_uvtype().is_some() && node.self_closing => parse_type(node)?,
         "union" if !node.self_closing => parse_type(node)?,
-
+        */
         // Values such as int, float, etc.
         name if name.to_uvtype().is_some() => parse_value(node)?,
 

@@ -137,7 +137,7 @@ pub enum ASTBlockType {
     VariableAssignment(VariableAssign),
     VariableAccess(VariableAccess),
 
-    ConditionalOp(),
+    ConditionalOp(Box<ConditionalOperator>),
 
     MathOp(MathOp),
     LogicalOp(LogicalOp),
@@ -337,6 +337,17 @@ pub struct ForLoop {
 pub struct WhileLoop {
     pub test: ASTBlockType,
     pub body: Spanned<Vec<ASTBlockType>>,
+
+    pub span: Span,
+}
+
+// ---------------------- Conditional Operator -------------------------------
+
+#[derive(Debug)]
+pub struct ConditionalOperator {
+    pub test: ASTBlockType,
+    pub then_body: Option<Spanned<Vec<ASTBlockType>>>,
+    pub else_body: Option<Spanned<Vec<ASTBlockType>>>,
 
     pub span: Span,
 }

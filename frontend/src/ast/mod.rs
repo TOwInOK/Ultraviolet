@@ -87,8 +87,6 @@ pub fn generate_ast(node: &UVParseNode) -> GeneratorOutputType {
 
         /*
         // Type parsing
-        // FIXME: Parsing of types should only occur in special places
-        // TODO: Move this parsing to a separate function
         name if name.to_uvtype().is_some() && node.self_closing => parse_type(node)?,
         "union" if !node.self_closing => parse_type(node)?,
         */

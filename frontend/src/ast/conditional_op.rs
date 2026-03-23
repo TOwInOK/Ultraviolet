@@ -54,9 +54,12 @@ fn parse_outcomes(
     node: &UVParseNode,
     tag_name: impl Into<String>,
 ) -> Result<Option<Spanned<Vec<ASTBlockType>>>, SpannedError> {
-    match node.get_one_tag_by_name(tag_name.into().as_str()) {
+    let binding = tag_name.into();
+    let n = binding.as_str();
+
+    match node.get_one_tag_by_name(n) {
         Some(t) if t.self_closing => Err(SpannedError::new(
-            "`then` tag could not be self-closing",
+            format!("`{}` tag could not be self-closing", n),
             t.span,
         )),
         Some(t) if !t.all_tags() => {

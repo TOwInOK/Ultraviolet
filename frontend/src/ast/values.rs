@@ -1,5 +1,6 @@
 use std::ops::Deref;
 
+use crate::tokens_parser::traits::UnwrapOptionError;
 use crate::types::Spanned;
 use crate::{
     ast::{
@@ -47,7 +48,7 @@ fn validate_inner(node: &UVParseNode) -> Result<(), SpannedError> {
 
 fn parse_int(node: &UVParseNode) -> Result<i64, SpannedError> {
     validate_inner(&node)?;
-    let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
+    let inner_contents = node.get_inner_literal().unwrap_or_spanned(node.span)?;
 
     inner_contents.parse::<i64>().map_err(|_| {
         SpannedError::new(
@@ -59,7 +60,7 @@ fn parse_int(node: &UVParseNode) -> Result<i64, SpannedError> {
 
 fn parse_float(node: &UVParseNode) -> Result<f64, SpannedError> {
     validate_inner(&node)?;
-    let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
+    let inner_contents = node.get_inner_literal().unwrap_or_spanned(node.span)?;
 
     inner_contents.parse::<f64>().map_err(|_| {
         SpannedError::new(
@@ -81,7 +82,7 @@ fn parse_str(node: &UVParseNode) -> String {
 
 fn parse_boolean(node: &UVParseNode) -> Result<bool, SpannedError> {
     validate_inner(&node)?;
-    let inner_contents = node.get_inner_literal().unwrap(); // This unwrap is safe due checks above
+    let inner_contents = node.get_inner_literal().unwrap_or_spanned(node.span)?;
 
     match inner_contents.as_str() {
         "1" | "true" => Ok(true),

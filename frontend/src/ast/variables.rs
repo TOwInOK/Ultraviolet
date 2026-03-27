@@ -72,7 +72,7 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         VariableDefinition {
             name: Spanned::new(name.deref().clone(), name_block.span),
             value: Spanned::new(generate_ast(value)?, value_block.span),
-            expected_type: validate_and_parse_inner_type_block(node)?,
+            expected_type: validate_and_parse_inner_type_block(node, "type")?,
             is_const: is_const,
             span: node.span,
         },

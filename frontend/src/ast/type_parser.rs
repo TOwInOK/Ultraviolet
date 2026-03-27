@@ -68,17 +68,20 @@ fn parse_union(node: &UVParseNode) -> Result<UVType, SpannedError> {
 /// Try to find inner type tag and parse its children types
 pub fn validate_and_parse_inner_type_block(
     node: &UVParseNode,
+    tag_name: impl Into<String>,
 ) -> Result<Option<Spanned<UVType>>, SpannedError> {
-    match node.get_one_tag_by_name("type") {
+    let name = tag_name.into();
+
+    match node.get_one_tag_by_name(name.as_str()) {
         Some(c) if c.self_closing => {
             return Err(SpannedError::new(
-                "`type` tag cannot be self-closing",
+                format!("`{}` tag cannot be self-closing", name),
                 c.span,
             ));
         }
         Some(ch) if ch.children_len() != 1 || !ch.all_tags() => {
             return Err(SpannedError::new(
-                "`type` tag must contain only one child",
+                format!("`{}` tag must contain only one child", name),
                 ch.span,
             ));
         }

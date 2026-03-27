@@ -61,7 +61,7 @@ pub fn parse_function_definition(node: &UVParseNode) -> GeneratorOutputType {
         FunctionDefinition {
             name: name.clone(),
             arguments: arguments,
-            return_type: validate_and_parse_inner_type_block(node)?,
+            return_type: validate_and_parse_inner_type_block(node, "returns")?,
             body: parse_children_vec(body)?,
             span: node.span,
         },
@@ -95,10 +95,9 @@ fn parse_arguments_definition(
 
             Ok(FunctionDefinitionArg {
                 name: name.clone(),
-                arg_type: validate_and_parse_inner_type_block(arg)?.ok_or(SpannedError::new(
-                    "Argument definition should have an `type` tag",
-                    arg.span,
-                ))?,
+                arg_type: validate_and_parse_inner_type_block(arg, "type")?.ok_or(
+                    SpannedError::new("Argument definition should have an `type` tag", arg.span),
+                )?,
                 span: arg.span,
             })
         })

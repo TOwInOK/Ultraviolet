@@ -2,11 +2,50 @@
 
     <head></head>
     <main>
-        <neq>
-            <int>5</int>
-            <int>5</int>
-            <int>5</int>
-        </neq>
+        <!-- Functions -->
+        <fn>
+            <!-- Function name -->
+            <name>some_function</name>
+        
+            <!-- Arguments definition -->
+            <arg>
+                <!-- Name of argument -->
+                <name>argument</name>
+        
+                <!-- Argument type -->
+                <type>
+                    <int />
+                </type>
+            </arg>
+        
+            <!-- Second argument -->
+            <arg>
+                <!-- Name of argument -->
+                <name>argument_2</name>
+        
+                <!-- Argument type -->
+                <type>
+                    <int />
+                </type>
+            </arg>
+        
+            <!-- Return type -->
+            <returns>
+                <int />
+            </returns>
+        
+            <!-- Function body -->
+        
+            <body>
+                <!-- Return -->
+                <return>
+                    <mul>
+                        <argument />
+                        <argument_2 />
+                    </mul>
+                </return>
+            </body>
+        </fn>
     </main>
 
 </program>

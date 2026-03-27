@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::{
     ast::{
         GeneratorOutputType, generate_ast, is_valid_identifier,
-        type_parser::parse_type_raw,
+        type_parser::validate_and_parse_inner_type_block,
         types::{ASTBlockType, VariableAccess, VariableAssign, VariableDefinition},
     },
     errors::SpannedError,
@@ -68,32 +68,11 @@ pub fn parse_var_definition(node: &UVParseNode) -> GeneratorOutputType {
         None => false,
     };
 
-    // Expected type <type>
-    let exp_type = match node.get_one_tag_by_name("type") {
-        Some(c) if c.self_closing => {
-            return Err(SpannedError::new(
-                "`type` tag cannot be self-closing",
-                c.span,
-            ));
-        }
-        Some(ch) if ch.children_len() != 1 || !ch.all_tags() => {
-            return Err(SpannedError::new(
-                "`type` tag must contain only one child, representing variable type",
-                ch.span,
-            ));
-        }
-        Some(ch) => Some(Spanned::new(
-            parse_type_raw(ch.get_tag_at(0).unwrap_or_spanned(ch.span)?)?,
-            ch.span,
-        )),
-        None => None,
-    };
-
     Ok(ASTBlockType::VariableDefinition(Box::new(
         VariableDefinition {
             name: Spanned::new(name.deref().clone(), name_block.span),
             value: Spanned::new(generate_ast(value)?, value_block.span),
-            expected_type: exp_type,
+            expected_type: validate_and_parse_inner_type_block(node)?,
             is_const: is_const,
             span: node.span,
         },

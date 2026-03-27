@@ -5,6 +5,7 @@ use crate::{
     ast::{
         compare_op::parse_compare_op,
         conditional_op::parse_conditional_op,
+        functions::parse_function_definition,
         logical_op::parse_logical_op,
         loops::{parse_for_loop, parse_while_loop},
         math_op::parse_math_op,
@@ -20,6 +21,7 @@ use once_cell::sync::Lazy;
 
 mod compare_op;
 mod conditional_op;
+mod functions;
 mod logical_op;
 mod loops;
 mod math_op;
@@ -84,6 +86,9 @@ pub fn generate_ast(node: &UVParseNode) -> GeneratorOutputType {
 
         // Parse group block
         "g" if !node.self_closing => ASTBlockType::GroupBlock(Box::new(parse_children_vec(node)?)),
+
+        // Parse function definition
+        "fn" if !node.self_closing => parse_function_definition(node)?,
 
         /*
         // Type parsing

@@ -147,9 +147,10 @@ pub enum ASTBlockType {
     WhileLoop(Box<WhileLoop>),
 
     Value(Spanned<UVValue>),
-    Type(UVType),
 
     GroupBlock(Box<Vec<ASTBlockType>>),
+
+    Return(Box<ASTBlockType>),
 }
 
 // --------------------------- PROGRAM BLOCK ------------------------
@@ -377,7 +378,7 @@ pub struct FunctionDefinitionArg {
 pub struct FunctionDefinition {
     pub name: Spanned<String>,
     pub arguments: Vec<FunctionDefinitionArg>,
-    pub return_type: Spanned<Option<UVType>>,
+    pub return_type: Option<Spanned<UVType>>,
 
     pub body: Vec<ASTBlockType>,
 

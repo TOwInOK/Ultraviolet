@@ -2,9 +2,11 @@ use std::ops::Deref;
 
 use crate::{
     ast::{
-        GeneratorOutputType, is_valid_identifier, parse_children_vec,
+        GeneratorOutputType, generate_ast, is_valid_identifier, parse_children_vec,
         type_parser::validate_and_parse_inner_type_block,
-        types::{ASTBlockType, FunctionDefinition, FunctionDefinitionArg},
+        types::{
+            ASTBlockType, FunctionCall, FunctionCallArg, FunctionDefinition, FunctionDefinitionArg,
+        },
     },
     errors::SpannedError,
     tokens_parser::{traits::UnwrapOptionError, types::UVParseNode},
@@ -100,6 +102,45 @@ fn parse_arguments_definition(
                 )?,
                 span: arg.span,
             })
+        })
+        .collect()
+}
+
+/// Parse function call block
+pub fn parse_function_call(node: &UVParseNode) -> GeneratorOutputType {
+    if node.extra_param.is_empty() {
+        return Err(SpannedError::new(
+            "Function call must have an function name",
+            node.span,
+        ));
+    }
+
+    if !is_valid_identifier(&node.extra_param) {
+        return Err(SpannedError::new(
+            format!(
+                "{} is not a valid identifier for function call",
+                node.extra_param
+            ),
+            node.span,
+        ));
+    }
+
+    Ok(ASTBlockType::FunctionCall(FunctionCall {
+        name: node.extra_param.clone(),
+        args: parse_function_call_arguments(node.get_all_tags())?,
+        span: node.span,
+    }))
+}
+
+pub fn parse_function_call_arguments(
+    args: Vec<&UVParseNode>,
+) -> Result<Vec<FunctionCallArg>, SpannedError> {
+    args.into_iter()
+        .map(|arg| {
+            return Ok(FunctionCallArg {
+                value: generate_ast(arg)?,
+                span: arg.span,
+            });
         })
         .collect()
 }

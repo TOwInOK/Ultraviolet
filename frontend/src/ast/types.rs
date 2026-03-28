@@ -133,7 +133,7 @@ pub enum ASTBlockType {
     VariableDefinition(Box<VariableDefinition>),
     FunctionDefinition(Box<FunctionDefinition>),
 
-    FunctionCall(),
+    FunctionCall(FunctionCall),
     VariableAssignment(VariableAssign),
     VariableAccess(VariableAccess),
 
@@ -364,7 +364,7 @@ pub struct ConditionalOperator {
     pub span: Span,
 }
 
-// -----------------------Function Definition --------------------------------
+// ----------------------- Function Definition --------------------------------
 
 #[derive(Debug)]
 pub struct FunctionDefinitionArg {
@@ -385,6 +385,21 @@ pub struct FunctionDefinition {
     pub span: Span,
 }
 
+// ------------------------- Function Call -----------------------------------
+#[derive(Debug)]
+pub struct FunctionCallArg {
+    pub value: ASTBlockType,
+
+    pub span: Span,
+}
+
+#[derive(Debug)]
+pub struct FunctionCall {
+    pub name: String,
+    pub args: Vec<FunctionCallArg>,
+
+    pub span: Span,
+}
 // ---------------------------- TESTS ----------------------------------------
 
 #[cfg(test)]

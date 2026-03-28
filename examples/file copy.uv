@@ -274,17 +274,17 @@
 
 
     <!-- Printing to console -->
-    <println>
+    <call println>
         <str>Hello world!</str>
-    </println>
+    </call>
 
     <!-- Will print `36` -->
-    <println>
+    <call println>
         <call some_function>
             <int>6</int>
             <int>6</int>
         </call>
-    </println>
+    </call>
 </main>
 
 </program>

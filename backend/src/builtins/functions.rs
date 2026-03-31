@@ -1,5 +1,8 @@
 use lazy_static::lazy_static;
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    io::{self, Write},
+};
 use ultraviolet_core::{
     errors::SpannedError,
     types::{
@@ -18,6 +21,7 @@ lazy_static! {
         let mut m = HashMap::new();
         m.insert("print", print as BuiltinFunctionSignature);
         m.insert("println", println as BuiltinFunctionSignature);
+        m.insert("read", read as BuiltinFunctionSignature);
         m
     };
 }
@@ -58,4 +62,23 @@ fn println(fc: &FunctionCall, env: EnvRef) -> Result<ControlFlow, SpannedError> 
     }
 
     Ok(ControlFlow::Simple(UVValue::Void))
+}
+
+/// Built-in function for reading from stdin
+///
+/// Returns String on success and Null on failure
+fn read(fc: &FunctionCall, env: EnvRef) -> Result<ControlFlow, SpannedError> {
+    // Print an initial input prompt if provided
+    if let Some(arg) = fc.args.first() {
+        let e_r = eval(&arg.value, env.clone())?;
+        let value = e_r.flatten();
+        print!("{}", value);
+        let _ = io::stdout().flush();
+    }
+
+    let mut input = String::new();
+    match io::stdin().read_line(&mut input) {
+        Ok(_) => Ok(ControlFlow::Return(UVValue::String(input))),
+        Err(_) => Ok(ControlFlow::Return(UVValue::Null)),
+    }
 }

@@ -5,6 +5,7 @@
         "uvcompare",
         "uvlogical",
         "uvmath",
-        "uvtype"
+        "uvtype",
+        "uvvalue"
     ]
 }

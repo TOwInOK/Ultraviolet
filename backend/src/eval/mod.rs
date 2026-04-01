@@ -23,7 +23,7 @@ pub fn eval(node: &ASTBlockType, env: EnvRef) -> Result<ControlFlow, SpannedErro
         // Main program and others service blocks
         ASTBlockType::Program(program_block) => eval_program(program_block, env)?,
         ASTBlockType::HeadBlock(blocks) | ASTBlockType::MainBlock(blocks) => {
-            eval_every(&blocks, env)?
+            eval_block(&blocks, env)?
         }
 
         // Variables things
@@ -45,30 +45,31 @@ pub fn eval(node: &ASTBlockType, env: EnvRef) -> Result<ControlFlow, SpannedErro
         ASTBlockType::ForLoop(for_loop) => todo!(),
         ASTBlockType::WhileLoop(while_loop) => todo!(),
         ASTBlockType::Value(val) => ControlFlow::Simple(val.value.clone()),
-        ASTBlockType::GroupBlock(block) => eval_every(block, env)?,
+        ASTBlockType::GroupBlock(block) => eval_block(block, env)?,
         ASTBlockType::Return(block) => eval_return(block, env)?,
     })
 }
 
 /// Eval every block in node vector
-fn eval_every(nodes: &Vec<ASTBlockType>, env: EnvRef) -> Result<ControlFlow, SpannedError> {
+fn eval_block(nodes: &Vec<ASTBlockType>, env: EnvRef) -> Result<ControlFlow, SpannedError> {
     let new_env = Environment::new_child(env);
 
+    let mut last_eval_simple_val = UVValue::Void;
     for node in nodes {
         match eval(&node, new_env.clone())? {
             ControlFlow::Return(val) => return Ok(ControlFlow::Return(val)),
-            _ => {} // Continue eval on simple result
+
+            // FIXME: Должен ли блок возвращать последнее вычисленное значение?
+            ControlFlow::Simple(val) => last_eval_simple_val = val,
         }
     }
 
-    Ok(ControlFlow::Simple(UVValue::Void))
+    Ok(ControlFlow::Simple(last_eval_simple_val))
 }
 
-/// Eval return expression
+/// Evaluate return block
 fn eval_return(node: &Box<ASTBlockType>, env: EnvRef) -> Result<ControlFlow, SpannedError> {
-    let val = match eval(node, env)? {
-        ControlFlow::Simple(val) | ControlFlow::Return(val) => val,
+    match eval(node, env)? {
+        ControlFlow::Simple(val) | ControlFlow::Return(val) => return Ok(ControlFlow::Return(val)),
     };
-
-    Ok(ControlFlow::Return(val))
 }

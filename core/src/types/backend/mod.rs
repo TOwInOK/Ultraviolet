@@ -62,6 +62,7 @@ pub enum ControlFlow {
 }
 
 impl ControlFlow {
+    // FIXME: Should interpreter flat a ControlFlow?
     pub fn flatten(&self) -> &UVValue {
         match self {
             ControlFlow::Simple(uvvalue) => uvvalue,

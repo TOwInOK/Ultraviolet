@@ -1,16 +1,18 @@
 <program>
     <main>
-        <call println>
-            <if>
-                <test>
-                    <bool>1</bool>
-                </test>
-                <then>
-                    
-                        <int>5</int>
-                    
-                </then>
-            </if>
+        <let>
+            <name>input</name>
+            <value>
+                <call read>
+                    <str>Введите свое имя: </str>
+                </call>
+            </value>
+        </let>
+
+        <call print>
+            <str>Ваше имя: </str>
+            <input />
+            <endl />
         </call>
     </main>
 

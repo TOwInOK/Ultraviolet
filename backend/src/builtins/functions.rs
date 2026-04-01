@@ -84,7 +84,9 @@ fn read(args: &Vec<UVValue>, _env: EnvRef) -> Result<ControlFlow, SpannedError> 
 
     let mut input = String::new();
     match io::stdin().read_line(&mut input) {
-        Ok(_) => Ok(ControlFlow::Simple(UVValue::String(input))),
+        Ok(_) => Ok(ControlFlow::Simple(UVValue::String(
+            input.trim_end().to_owned(),
+        ))),
         Err(_) => Ok(ControlFlow::Simple(UVValue::Null)),
     }
 }

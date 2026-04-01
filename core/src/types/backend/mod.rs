@@ -77,6 +77,8 @@ impl RTVariable {
 #[derive(Debug)]
 pub enum ControlFlow {
     Simple(UVValue),
+
+    /// Return propagates upstream
     Return(UVValue),
 }
 

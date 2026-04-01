@@ -1,5 +1,8 @@
 use crate::{
-    builtins::functions::{execute_builtin_function, is_builtin_function},
+    builtins::{
+        constants::{get_builtin_constant, is_builtin_constant},
+        functions::{execute_builtin_function, is_builtin_function},
+    },
     eval::{
         conditional_op::eval_conditional_op,
         program::eval_program,
@@ -28,6 +31,12 @@ pub fn eval(node: &ASTBlockType, env: EnvRef) -> Result<ControlFlow, SpannedErro
         // Variables things
         ASTBlockType::VariableDefinition(def) => define_variable(def, env)?,
         ASTBlockType::VariableAssignment(var_assign) => assign_variable(var_assign, env)?,
+
+        // Builtin constants
+        ASTBlockType::VariableAccess(var_acc) if is_builtin_constant(&var_acc.name) => {
+            get_builtin_constant(&var_acc.name)
+        }
+
         ASTBlockType::VariableAccess(var_acc) => access_variable(var_acc, env)?,
 
         // Functions things

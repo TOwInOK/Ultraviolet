@@ -43,7 +43,7 @@ fn is_valid_identifier(s: &str) -> bool {
     IDENT_REGEX.is_match(s)
 }
 
-/// Parse <program> content
+/// Parse `program` content
 pub fn gen_main_ast(node: &UVParseNode) -> GeneratorOutputType {
     if node.name.ne("program") {
         return Err(SpannedError::new(
